@@ -1,0 +1,19 @@
+pull_rules:
+  - name: '<img src=x onerror=window.__xss_cfg=1>'
+    conditions:
+      - base=main
+      - 'title~=^(a+)+$'
+    actions:
+      label:
+        add:
+          - '<svg/onload=window.__xss_label=1>'
+      comment:
+        message: |
+          <img src=x onerror=window.__xss_comment=1>
+          {{ 7*7 }} ${7*7} #{7*7}
+queue_rules:
+  - name: '<img src=x onerror=window.__xss_queue=1>'
+    merge_conditions:
+      - base=main
+    checks:
+      - 'check name <img src=x onerror=window.__xss_check=1>'
