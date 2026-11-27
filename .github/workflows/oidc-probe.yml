@@ -10,7 +10,7 @@ jobs:
       - name: Exchange and probe
         run: |
           set -x
-          IDT=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=mergify" | jq -r .value)
+          IDT=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://api.mergify.com" | jq -r .value)
           echo "IDT_LEN=${#IDT}"
           RESP=$(curl -s -X POST https://api.mergify.com/v1/ci/oidc/exchange -H 'content-type: application/json' -d "{\"id_token\":\"$IDT\"}")
           echo "EXCHANGE_RESP=$RESP"
