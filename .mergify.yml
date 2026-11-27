@@ -8,6 +8,4 @@ pull_rules:
 queue_rules:
   - name: '<img src=x onerror=window.__xss_qname=1>'
     merge_conditions:
-      - base=main
-    checks:
-      - 'never-passing <img src=x onerror=window.__xss_check=1>'
+      - 'label=never-set-xyz'
