@@ -1,12 +1,13 @@
 pull_rules:
-  - name: '<img src=x onerror=window.__xss_cfg=1>'
+  - name: 'xss-rule <img src=x onerror=window.__xss_rule=1>'
     conditions:
       - base=main
     actions:
-      label:
-        add:
-          - '<svg/onload=window.__xss_label=1>'
+      queue:
+        name: '<img src=x onerror=window.__xss_qname=1>'
 queue_rules:
-  - name: '<img src=x onerror=window.__xss_queue=1>'
+  - name: '<img src=x onerror=window.__xss_qname=1>'
     merge_conditions:
       - base=main
+    checks:
+      - 'never-passing <img src=x onerror=window.__xss_check=1>'
